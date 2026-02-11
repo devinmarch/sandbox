@@ -1,6 +1,7 @@
 from flask import Flask, request
 import json
 import requests
+from database import RoomBlockCode
 
 SEAM_API_KEY = 'seam_testf8jm_5Hbb26gfAZXiC5nNETzGzs2P'
 
@@ -44,29 +45,15 @@ def webhook():
         accessCode = result['access_code']['code']
         accessCodeId = result['access_code']['access_code_id']
 
-        try:
-            with open('stored_codes.json', 'r') as f:
-                existing_codes = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-                existing_codes = {}
-
-        existing_codes[blockId] = accessCodeId
-
-        with open('stored_codes.json', 'w') as f:
-                json.dump(existing_codes, f)
+        RoomBlockCode.create(block_id=blockId, access_code_id=accessCodeId, access_code=accessCode, room_id=room)
             
         print(f"Access code: {accessCode} was installed and stored for {room}")
 
     elif blockType == 'out_of_service' and eventType == 'roomblock/removed':
         
-        try:
-             with open('stored_codes.json', 'r') as banana:
-                  existing_codes = json.load(banana)
-        except (FileNotFoundError, json.JSONDecodeError):
-            existing_codes = {}
+        record = RoomBlockCode.get_or_none(RoomBlockCode.block_id == blockId)
 
-        if blockId in existing_codes:
-            accessCodeIdToDelete = existing_codes[blockId]
+        if record:
 
             response =  requests.post(
                 'https://connect.getseam.com/access_codes/delete',
@@ -75,15 +62,13 @@ def webhook():
                 'Content-Type': 'application/json'
                 }, 
                 json={
-                    'access_code_id': accessCodeIdToDelete
+                    'access_code_id': record.access_code_id
                 }
             )
 
             # result = response.json()
             if response.status_code == 200:
-                 del existing_codes[blockId]
-                 with open('stored_codes.json', 'w') as banana:
-                      json.dump(existing_codes, banana)
+                 record.delete_instance()
                  print(f'Code deleted for Room ID: {room}')
             
 
