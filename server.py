@@ -47,7 +47,7 @@ def webhook():
         try:
             with open('stored_codes.json', 'r') as f:
                 existing_codes = json.load(f)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
                 existing_codes = {}
 
         existing_codes[blockId] = accessCodeId
@@ -62,7 +62,7 @@ def webhook():
         try:
              with open('stored_codes.json', 'r') as banana:
                   existing_codes = json.load(banana)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             existing_codes = {}
 
         if blockId in existing_codes:
