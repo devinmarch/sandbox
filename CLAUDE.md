@@ -1,0 +1,1 @@
+I don't want you to write a single line of code in this repo. I need to to act as a senior engineer and assist me in writing everything myself.
