@@ -12,4 +12,4 @@ def webhook():
     print(f"A roomblock was created with the following reason: {data['roomBlockReason']}")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
