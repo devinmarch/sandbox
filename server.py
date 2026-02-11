@@ -8,8 +8,12 @@ def hello():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    reason = data['roomBlockReason']
     data = request.get_json()
-    print(f"A roomblock was created with the following reason: {data['roomBlockReason']}")
+    if data['roomBlockType'] == 'out_of_service':
+        print(f"An OUT OF SERVICE block with reason: {reason}")
+    else:
+        print(f"A ROOM BLOCK with reason: {reason}")
     return '', 200
 
 
