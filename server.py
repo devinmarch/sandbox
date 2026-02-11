@@ -27,7 +27,7 @@ def webhook():
     eventType = data['event']
     room = data['rooms'][0]['roomID']
 
-    if blockType == 'out_of_service' and reason == 'hairycat' and eventType == 'roomblock/created':
+    if blockType == 'out_of_service' and reason == 'guinness' and eventType == 'roomblock/created':
 
         response = requests.post(
             'https://connect.getseam.com/access_codes/create',
