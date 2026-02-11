@@ -18,12 +18,17 @@ def hello():
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+
     data = request.get_json()
+
     reason = data['roomBlockReason'].strip().lower()
     blockId = data['roomBlockID']
     blockType = data['roomBlockType']
+    eventType = data['event']
     room = data['rooms'][0]['roomID']
-    if blockType == 'out_of_service' and reason == "hairycat":
+
+    if blockType == 'out_of_service' and reason == 'hairycat' and eventType == 'roomblock/created':
+
         response = requests.post(
             'https://connect.getseam.com/access_codes/create',
             headers={
@@ -40,7 +45,7 @@ def webhook():
         accessCodeId = result['access_code']['access_code_id']
 
         try:
-            with open ('stored_codes.json', 'r') as f:
+            with open('stored_codes.json', 'r') as f:
                 existing_codes = json.load(f)
         except FileNotFoundError:
                 existing_codes = {}
@@ -51,6 +56,36 @@ def webhook():
                 json.dump(existing_codes, f)
             
         print(f"Access code: {accessCode} was installed and stored for {room}")
+
+    elif blockType == 'out_of_service' and eventType == 'roomblock/removed':
+        
+        try:
+             with open('stored_codes.json', 'r') as banana:
+                  existing_codes = json.load(banana)
+        except FileNotFoundError
+            existing_codes = {}
+
+        if blockId in existing_codes:
+            accessCodeIdToDelete = existing_codes[blockId]
+
+            response =  requests.post(
+                'https://connect.getseam.com/access_codes/delete',
+                headers={
+                'Authorization': f'Bearer {SEAM_API_KEY}',
+                'Content-Type': 'application/json'
+                }, 
+                json={
+                    'access_code_id': accessCodeIdToDelete
+                }
+            )
+
+            # result = response.json()
+            if response.status_code == 200:
+                 print(f'Code deleted for Room ID: {room}')
+            
+
+        else:
+             print('No access code ID found in storage.')
 
     else:
         print(f"Room blocked skipped.")
