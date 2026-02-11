@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../reservations"
+		},
+		{
+			"path": "../availability-map"
+		}
+	],
+	"settings": {}
+}
