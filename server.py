@@ -81,6 +81,9 @@ def webhook():
 
             # result = response.json()
             if response.status_code == 200:
+                 del existing_codes[blockId]
+                 with open('stored_codes.json', 'w') as banana:
+                      json.dump(existing_codes, banana)
                  print(f'Code deleted for Room ID: {room}')
             
 
