@@ -21,6 +21,7 @@ WantedBy=multi-user.target
 
 EnvironmentFile=/path/to/your/app/.env
 RestartSec=3
+Environment=PYTHONUNBUFFERED=1
 
 ### Commands used with systemd
 

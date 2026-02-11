@@ -10,6 +10,8 @@ def hello():
 def webhook():
     data = request.get_json()
     print(f"A roomblock was created with the following reason: {data['roomBlockReason']}")
+    return '', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002)
