@@ -7,7 +7,12 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'Hello world'
+    codes = RoomBlockCode.select()
+    return str([{
+        'block_id': c.block_id,
+        'access_code': c.access_code,
+        'room_id': SEAM_DEVICE_ID[c.room_id]['name']
+    } for c in codes])
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
