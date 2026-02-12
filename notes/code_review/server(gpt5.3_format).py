@@ -1,0 +1,92 @@
+from flask import Flask, request
+import requests
+
+from database import RoomBlockCode
+from config import SEAM_API_KEY, SEAM_DEVICE_ID
+
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def hello():
+    return "Hello world"
+    codes = RoomBlockCode.select()
+    return str([{
+        'block_id': c.block_id,
+        'access_code': c.access_code,
+        'room_id': SEAM_DEVICE_ID[c.room_id]['name']
+    } for c in codes])
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.get_json()
+
+    reason = data["roomBlockReason"].strip().lower()
+    blockId = data["roomBlockID"]
+    blockType = data["roomBlockType"]
+    eventType = data["event"]
+    room = data["rooms"][0]["roomID"]
+
+    if (
+        blockType == "out_of_service"
+        and reason == "guinness"
+        and eventType == "roomblock/created"
+    ):
+        response = requests.post(
+            "https://connect.getseam.com/access_codes/create",
+            headers={
+                "Authorization": f"Bearer {SEAM_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "device_id": SEAM_DEVICE_ID[room]["device_id"],
+            },
+        )
+
+        result = response.json()
+        accessCode = result["access_code"]["code"]
+        accessCodeId = result["access_code"]["access_code_id"]
+
+        RoomBlockCode.create(
+            block_id=blockId,
+            access_code_id=accessCodeId,
+            access_code=accessCode,
+            room_id=room,
+        )
+
+        print(
+            f"Access code {accessCode} was installed on {SEAM_DEVICE_ID[room]['name']}"
+        )
+
+    elif blockType == "out_of_service" and eventType == "roomblock/removed":
+        record = RoomBlockCode.get_or_none(RoomBlockCode.block_id == blockId)
+
+        if record:
+            response = requests.post(
+                "https://connect.getseam.com/access_codes/delete",
+                headers={
+                    "Authorization": f"Bearer {SEAM_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "access_code_id": record.access_code_id,
+                },
+            )
+
+            # result = response.json()
+            if response.status_code == 200:
+                record.delete_instance()
+                print(f"Code deleted for {SEAM_DEVICE_ID[room]['name']}")
+
+        else:
+            print("No access code ID found in storage.")
+
+    else:
+        print("Room blocked skipped.")
+
+    return "", 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5002)
