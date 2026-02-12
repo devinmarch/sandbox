@@ -46,7 +46,7 @@ def webhook():
 
         RoomBlockCode.create(block_id=blockId, access_code_id=accessCodeId, access_code=accessCode, room_id=room)
             
-        print(f"Access code: {accessCode} was installed and stored for {SEAM_DEVICE_ID[room]['name']}")
+        print(f"Access code {accessCode} was installed on {SEAM_DEVICE_ID[room]['name']}")
 
     elif blockType == 'out_of_service' and eventType == 'roomblock/removed':
         
@@ -68,7 +68,7 @@ def webhook():
             # result = response.json()
             if response.status_code == 200:
                  record.delete_instance()
-                 print(f'Code deleted for {SEAM_DEVICE_ID[room]['name']}')
+                 print(f"Code deleted for {SEAM_DEVICE_ID[room]['name']}")
             
 
         else:
