@@ -10,7 +10,7 @@ def hello():
     codes = RoomBlockCode.select()
     result = ''
     for c in codes:
-        result += f"Room: {SEAM_DEVICE_ID[c.room_id]['name']} - Code: {c.access_code}\n}"
+        result += f"Room: {SEAM_DEVICE_ID[c.room_id]['name']} - Code: {c.access_code}\n"
     return result
 
     # return str([{
