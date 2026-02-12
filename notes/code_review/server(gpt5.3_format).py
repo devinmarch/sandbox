@@ -10,7 +10,6 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello world"
     codes = RoomBlockCode.select()
     return str([{
         'block_id': c.block_id,
